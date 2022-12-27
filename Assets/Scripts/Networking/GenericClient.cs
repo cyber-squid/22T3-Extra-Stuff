@@ -5,6 +5,9 @@ using UnityEngine;
 
 namespace Networking
 {
+    /// <summary>
+    /// Client frame for other client types, such as the chat client, to inherit from and determine how to parse data.
+    /// </summary>
     internal abstract class GenericClient
     {
         protected Telepathy.Client TPClient;
@@ -27,6 +30,7 @@ namespace Networking
             TPClient.Send(new System.ArraySegment<byte>(message.dataArray));
         }
 
+        // inheriting classes can determine how to interpret incoming data. 
         protected abstract void OnData(System.ArraySegment<byte> data);
 
 

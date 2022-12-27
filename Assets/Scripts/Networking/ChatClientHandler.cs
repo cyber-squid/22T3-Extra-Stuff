@@ -4,6 +4,9 @@ using UnityEngine;
 
 namespace Networking
 {
+    /// <summary>
+    /// Public facing class that takes care of interfacing with the chat client, and keeps messages internal.
+    /// </summary>
     public class ChatClientHandler
     {
         ChatClient client;

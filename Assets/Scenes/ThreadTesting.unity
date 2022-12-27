@@ -153,8 +153,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   heightmap: {fileID: 2800000, guid: 6157565e5552f364faf0ee99359cf261, type: 3}
-  RectCountOnX: 1879
-  RectCountOnZ: 2047
+  RectCountOnX: 163
+  RectCountOnZ: 387
   heightMultiplier: 100
   scale: 2
 --- !u!4 &113196169

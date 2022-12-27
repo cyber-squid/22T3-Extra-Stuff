@@ -4,6 +4,9 @@ using UnityEngine;
 
 namespace Networking
 {
+    /// <summary>
+    /// A class that handles connecting to the server, and both sending and recieving chat messages for an individual user.
+    /// </summary>
     internal class ChatClient : GenericClient
     {
         public ChatClient(int port, string serverIP) : base(port, serverIP)

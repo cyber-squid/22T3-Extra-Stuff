@@ -7,6 +7,8 @@ using System.Threading;
 /// <summary>
 /// Code is sourced from my previous term's work. Generates a mesh in a given texture within a thread,
 /// by first getting its colors, then using the brightness of pixels to set up an array of vertices and indices. 
+/// 
+/// NOTICE: The thread itself works fine, but the code inside is buggy...
 /// </summary>
 public class ThreadedTriRenderer : MonoBehaviour
 {
@@ -39,6 +41,8 @@ public class ThreadedTriRenderer : MonoBehaviour
 
     Thread thread;
     bool threadFinished;
+
+    private static object generatorLock = new object();
 
 
     void Start()
@@ -95,8 +99,10 @@ public class ThreadedTriRenderer : MonoBehaviour
     {
         Debug.Log("thread was started");
 
-        object generatorLock = new object();
+        int currentVertex = 0;
+        int currentRect = 0;
 
+        // stop this from being executed by anything else before we finish making our terrain values
         lock (generatorLock)
         {
             // determine the number of vertices and indices to create.
@@ -116,8 +122,6 @@ public class ThreadedTriRenderer : MonoBehaviour
             float xRatio = (heightmapWidth / vertexCountX);
             float zRatio = (heightmapHeight / vertexCountZ); // get the ratio of how many pixels there are for each vertex.
 
-            //float xRatio = heights[vertexCountX];
-
             //Color[] heights = heightmap.GetPixels();// (int)(x * xRatio), (int)(z * zRatio));
 
             // iterate through each vertex, going through x axis first, then z.
@@ -127,7 +131,7 @@ public class ThreadedTriRenderer : MonoBehaviour
                 {
                     int vertexIndex = x + z * vertexCountX;
 
-
+                    // stop mesh size going out of bounds.
                     if (xRatio < 1f)
                     {
                         xRatio = 1f;
@@ -141,40 +145,38 @@ public class ThreadedTriRenderer : MonoBehaviour
                     }
 
                     // get the pixel coordinate of the given heightmap point, rounding out with the ratio factor (coords must be int).
-                    Color height = heights[vertexIndex];
+                    Color height = heights[(int)(x * xRatio) + ((int)(z * zRatio) * vertexCountX)];
 
-                    // set the position and height of the vector using loop position, and the pixel color.
+                    // set the position and height of the vertex using loop position, and the pixel color we got.
                     colors[vertexIndex] = height;
                     vertices[vertexIndex] = new Vector3(x * scale, height.grayscale * heightMultiplier, -z * scale);
 
 
                 }
             }
-        }
 
-        /// Indices
-        int currentVertex = 0;
-        int currentRect = 0;
 
-        for (int z = 0; z < RectCountOnZ; z++)
-        {
-            for (int x = 0; x < RectCountOnX; x++)
+            /// Indices
+            for (int z = 0; z < RectCountOnZ; z++)
             {
-                indices[currentRect + 0] = currentVertex;
-                indices[currentRect + 1] = currentVertex + 1;
-                indices[currentRect + 2] = currentVertex + vertexCountX + 1; //should be amount on x
-                indices[currentRect + 3] = currentVertex + vertexCountX + 1;
-                indices[currentRect + 4] = currentVertex + vertexCountX;
-                indices[currentRect + 5] = currentVertex;
+                for (int x = 0; x < RectCountOnX; x++)
+                {
+                    indices[currentRect + 0] = currentVertex;
+                    indices[currentRect + 1] = currentVertex + 1;
+                    indices[currentRect + 2] = currentVertex + vertexCountX + 1; //should be amount on x
+                    indices[currentRect + 3] = currentVertex + vertexCountX + 1;
+                    indices[currentRect + 4] = currentVertex + vertexCountX;
+                    indices[currentRect + 5] = currentVertex;
 
+
+                    currentVertex++;
+                    currentRect += 6;
+                }
 
                 currentVertex++;
-                currentRect += 6;
             }
 
-            currentVertex++;
         }
-
 
         threadFinished = true;
         Debug.Log("thread done");
